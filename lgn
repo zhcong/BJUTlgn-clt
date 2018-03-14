@@ -17,7 +17,8 @@ if [ $# = "0" ];then
 			number=`echo "scale=3;$number/1024" | bc`
 			echo "Used: \033[31m[$number]\033[0mMb"
 		else
-			suc=`curl -s -d "DDDDD=学号&upass=密码&v46s=0&v6ip=2001:0da8:0216:2140:c8dc:be95:5f19:b132&0MKKey=Login" "https://lgn.bjut.edu.cn" | grep -oP "successfully logged"`
+			my_ipv6=`ifconfig | grep -oP "2001:.*:\S{0,4}"`
+			suc=`curl -s -d "DDDDD=学号&upass=密码&v46s=0&v6ip="$my_ipv6"&0MKKey=Login" "https://lgn.bjut.edu.cn" | grep -oP "successfully logged"`
 			if [ "$suc" = "successfully logged" ];then
 				echo "login."
 			else
