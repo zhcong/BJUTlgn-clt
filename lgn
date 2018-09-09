@@ -1,104 +1,116 @@
 #!/bin/sh
-#v2.0
+#v3.0
 #使用https进行链接
 #支持无线网络认证
+
+if [ $# = "1" ];then
+    if [ $1 = "-o" ];then
+        flag=`curl -s https://lgn.bjut.edu.cn`
+        if [ "`echo $flag | grep -oP 'Used flux'`" = "Used flux" ];then
+            suc=`curl -s "lgn.bjut.edu.cn/F.htm" | grep -oP "Logout successfully"`
+            if [ "$suc" = "Logout successfully" ];then
+                echo "logout."
+            else
+                echo "logout fail."
+            fi
+        else
+            flag=`curl -s https://lgn6.bjut.edu.cn`
+            if [ "`echo $flag | grep -oP 'Used flux'`" = "Used flux" ];then
+                suc=`curl -s "lgn6.bjut.edu.cn/F.htm" | grep -oP "Logout successfully"`
+                if [ "$suc" = "Logout successfully" ];then
+                    echo "logout."
+                else
+                    echo "logout fail."
+                fi
+            fi
+        fi
+        exit 0
+    fi
+
+    if [ $1 = "-wo" ];then
+        suc=`curl -s "wlgn.bjut.edu.cn/F.htm" | grep -oP "Logout successfully"`
+        if [ "$suc" = "Logout successfully" ];then
+            echo "logout."
+        else
+            echo "logout fail."
+        fi
+        exit 0
+    fi
+fi
+
+flag=`curl -s http://lgn.bjut.edu.cn`
+if [ "`echo $flag | grep -oP 'Used flux'`" = "Used flux" ];then
+    number=`echo $flag | grep -oP "(?<=flow=\')[^\']*"`
+    number=`echo "$number" | grep -oP "[0-9]*" | bc`
+    number=`echo "scale=3;$number/1024" | bc`
+    echo "Used: \033[31m[$number]\033[0mMb"
+    exit 0
+else
+    flag=`curl -s lgn6.bjut.edu.cn`
+    if [ "`echo $flag | grep -oP 'Used flux'`" = "Used flux" ];then
+        number=`echo $flag | grep -oP "(?<=flow=\')[^\']*"`
+        number=`echo "$number" | grep -oP "[0-9]*" | bc`
+        number=`echo "scale=3;$number/1024" | bc`
+        echo "Used: \033[31m[$number]\033[0mMb"
+        exit 0
+    fi
+fi
+
 if [ $# = "0" ];then
-	flag=`curl -s http://lgn.bjut.edu.cn`
-	if [ "`echo $flag | grep -oP 'Used flux'`" = "Used flux" ];then
-		number=`echo $flag | grep -oP "(?<=flow=\')[^\']*"`
-		number=`echo "$number" | grep -oP "[0-9]*" | bc`
-		number=`echo "scale=3;$number/1024" | bc`
-		echo "Used: \033[31m[$number]\033[0mMb"
+	my_ipv6=`ifconfig | grep -oP -m1 "2001:.*:\S{0,4}"`
+	suc=`curl -s -d "DDDDD=学号&upass=密码&v46s=0&v6ip="$my_ipv6"&0MKKey=Login" "https://lgn.bjut.edu.cn" | grep -oP "successfully logged"`
+	if [ "$suc" = "successfully logged" ];then
+		echo "login."
 	else
-		flag=`curl -s lgn6.bjut.edu.cn`
-		if [ "`echo $flag | grep -oP 'Used flux'`" = "Used flux" ];then
-			number=`echo $flag | grep -oP "(?<=flow=\')[^\']*"`
-			number=`echo "$number" | grep -oP "[0-9]*" | bc`
-			number=`echo "scale=3;$number/1024" | bc`
-			echo "Used: \033[31m[$number]\033[0mMb"
-		else
-			my_ipv6=`ifconfig | grep -oP "2001:.*:\S{0,4}"`
-			suc=`curl -s -d "DDDDD=学号&upass=密码&v46s=0&v6ip="$my_ipv6"&0MKKey=Login" "https://lgn.bjut.edu.cn" | grep -oP "successfully logged"`
-			if [ "$suc" = "successfully logged" ];then
-				echo "login."
-			else
-				echo "login fail."
-			fi
-		fi
+		echo "login fail."
 	fi
+    exit 0
 fi
 if [ $# = "1" ];then
-	if [ $1 = "-o" ];then
-		flag=`curl -s https://lgn.bjut.edu.cn`
-		if [ "`echo $flag | grep -oP 'Used flux'`" = "Used flux" ];then
-			suc=`curl -s "lgn.bjut.edu.cn/F.htm" | grep -oP "Logout successfully"`
-			if [ "$suc" = "Logout successfully" ];then
-				echo "logout."
-			else
-				echo "logout fail."
-			fi
-		else
-			flag=`curl -s https://lgn6.bjut.edu.cn`
-			if [ "`echo $flag | grep -oP 'Used flux'`" = "Used flux" ];then
-				suc=`curl -s "lgn6.bjut.edu.cn/F.htm" | grep -oP "Logout successfully"`
-				if [ "$suc" = "Logout successfully" ];then
-					echo "logout."
-				else
-					echo "logout fail."
-				fi
-			fi
-		fi
-	fi
-	if [ $1 = "-4" ];then
-		suc=`curl -s -d "DDDDD=学号&upass=密码&v46s=1&v6ip=&f4serip=172.30.201.2&0MKKey=" "https://lgn.bjut.edu.cn" | grep -oP "successfully logged"`
-		if [ "$suc" = "successfully logged" ];then
-			echo "login."
-		else
-			suc=`curl -s -d "DDDDD=学号&upass=密码&v46s=1&v6ip=&f4serip=172.30.201.2&0MKKey=" "https://lgn.bjut.edu.cn" | grep -oP "In use !"`
-			if [ "$suc" = "In use !" ];then
-				echo "In use."
-			else
-				echo "login fail."
-			fi
-		fi
-	fi
-	if [ $1 = "-6" ];then
-		suc=`curl -s -d "DDDDD=学号&upass=密码&v46s=2&v6ip=&f4serip=172.30.201.10&0MKKey=" "https://lgn6.bjut.edu.cn" | grep -oP "successfully logged"`
-		if [ "$suc" = "successfully logged" ];then
-			echo "login."
-		else
-			echo "login fail."
-		fi
-	fi
-	if [ $1 = "-w" ];then
-		html=`curl -s -d "DDDDD=学号&upass=密码&6MKKey=123" "https://wlgn.bjut.edu.cn"`
-		suc=`echo $html | grep -oP "successfully logged"`
-		if [ "$suc" = "successfully logged" ];then
-			echo "login."
-		else
-			suc=`echo $html | grep -oP "In use !"`
-			if [ "$suc" = "In use !" ];then
-				echo "In use."
-			else
-				echo "login fail."
-			fi
-		fi
-	fi
-	if [ $1 = "-wo" ];then
-		suc=`curl -s "wlgn.bjut.edu.cn/F.htm" | grep -oP "Logout successfully"`
-		if [ "$suc" = "Logout successfully" ];then
-			echo "logout."
-		else
-			echo "logout fail."
-		fi
-	fi
-	if [ $1 = "--help" ];then
-		echo "BJUT LAN CONNECT."
-		echo "-o\tlog out."
-		echo "-4\tlog in with the ipv4."
-		echo "-6\tlog in with the ipv6."
-		echo "-w\tlog through the wlan."
-		echo "-wo\tlog out through the wlan."
-		echo "(^_^)Just be happy!"
-	fi
+    if [ $1 = "-4" ];then
+    	suc=`curl -s -d "DDDDD=学号&upass=密码&v46s=1&v6ip=&f4serip=172.30.201.2&0MKKey=" "https://lgn.bjut.edu.cn" | grep -oP "successfully logged"`
+    	if [ "$suc" = "successfully logged" ];then
+    		echo "login."
+    	else
+    		suc=`curl -s -d "DDDDD=学号&upass=密码&v46s=1&v6ip=&f4serip=172.30.201.2&0MKKey=" "https://lgn.bjut.edu.cn" | grep -oP "In use !"`
+    		if [ "$suc" = "In use !" ];then
+    			echo "In use."
+    		else
+    			echo "login fail."
+    		fi
+    	fi
+        exit 0
+    fi
+    if [ $1 = "-6" ];then
+    	suc=`curl -s -d "DDDDD=学号&upass=密码&v46s=2&v6ip=&f4serip=172.30.201.10&0MKKey=" "https://lgn6.bjut.edu.cn" | grep -oP "successfully logged"`
+    	if [ "$suc" = "successfully logged" ];then
+    		echo "login."
+    	else
+    		echo "login fail."
+    	fi
+        exit 0
+    fi
+    if [ $1 = "-w" ];then
+    	html=`curl -s -d "DDDDD=学号&upass=密码&6MKKey=123" "https://wlgn.bjut.edu.cn"`
+    	suc=`echo $html | grep -oP "successfully logged"`
+    	if [ "$suc" = "successfully logged" ];then
+    		echo "login."
+    	else
+    		suc=`echo $html | grep -oP "In use !"`
+    		if [ "$suc" = "In use !" ];then
+    			echo "In use."
+    		else
+    			echo "login fail."
+    		fi
+    	fi
+        exit 0
+    fi
+    if [ $1 = "--help" ];then
+    	echo "BJUT LAN CONNECT."
+    	echo "-o\tlog out."
+    	echo "-4\tlog in with the ipv4."
+    	echo "-6\tlog in with the ipv6."
+    	echo "-w\tlog through the wlan."
+    	echo "(^_^)Just be happy!"
+    fi
 fi
